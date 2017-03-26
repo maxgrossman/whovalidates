@@ -16,7 +16,7 @@ usersJSON = requests.get("http://osmstats.redcross.org/users").json()
 # list to hold dictionaries for each to be used to make dataframe
 usersInfoList = []
 
-for user in usersJSON:
+for user in usersJSON[352:len(usersJSON)]:
     # create validator object for current user, grab edits and stats
     user = validator(user['name'],user['id'])
     user.userStats()
