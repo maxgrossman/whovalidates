@@ -1,12 +1,11 @@
-
 # coding: utf-8
-
-# In[11]:
-
 # code: validator
 # purpose: module to make and describe validators 
 
 import requests
+#from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
+import datetime
 
 # validator - includes name and uid, osm-stats info 
 class validator:
@@ -16,15 +15,38 @@ class validator:
         self.uid = str(uid)
     
     # get validator info from osm-stats api and set it to info obj
-    def userInfo(self):
-        OSMstats = "http://osmstats.redcross.org/"
+    def userStats(self):
+        osmStats = "http://osmstats.redcross.org/users"
         # catch when osmstats is not available
         try:
-            OSMstatsStatus = requests.get(OSMstats).raise_for_status()
+            requests.get(osmStats).raise_for_status()
         except requests.exceptions.HTTPError as httpErr:
             print(httpErr)
         # get user info from osm stats
-        OSMstatsEP = OSMstats + '/user/' + self.uid
-        OSMstatsResponse = requests.get(OSMstatsEP)
-        self.info = OSMstatsResponse.json()
+        osmStatsUser = osmStats + '/' + self.uid
+        OSMstatsResponse = requests.get(osmStatsUser)
+        self.osmStats = OSMstatsResponse.json()
 
+    # get validator # Changesets and age of osm account
+    def userChangesetsDays(self):
+        osm = "http://api.openstreetmap.org/api/0.6/user/"
+        # catch when openstreetmap is not available
+        try:
+            requests.get("http://api.openstreetmap.org").raise_for_status()
+        except requests.exceptions.HTTPError as httpErr:
+            print(httpErr)        
+        # get xml of user profile
+        osmUserXML = ET.fromstring(requests.get(osm + self.uid).text)
+        # get number of changesets and edits
+        cs = osmUserXML[0][4].attrib['count']
+        # get account age
+        accountCreated = osmUserXML[0].attrib['account_created'].split('T')[0]
+        today = datetime.datetime.now()
+        acctAge = today - datetime.datetime.strptime(accountCreated,'%Y-%m-%d')
+        acctAge = acctAge.days
+        # set validator's cs,days attribute
+        self.changesets = cs
+        self.acctAge = acctAge
+        
+        
+        
