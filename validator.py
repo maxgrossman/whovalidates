@@ -21,12 +21,12 @@ class validator:
         try:
             osmstatsResponse = requests.get(osmStats)
             osmstatsResponse.raise_for_status()
-            # get user info from osm stats
-            OSMstatsResponse = requests.get(osmStats)
-            self.osmStats = OSMstatsResponse.json()
         except requests.exceptions.HTTPError as httpErr:
             print("osmstats seems to not be responding")
             print(httpErr)
+        else:
+            # get user info from osm stats
+            self.osmStats = osmstatsResponse.json()
         
 
     # get validator # Changesets and age of osm account
@@ -36,8 +36,13 @@ class validator:
         try:
             apiResponse = requests.get(osm)
             apiResponse.raise_for_status()
+        except requests.exceptions.HTTPError:
+            #when user profile does not exist, 
+            self.changesets = None
+            self.acctAge = None  
+        else:
             # get xml of user profile
-            osmUserXML = ET.fromstring(requests.get(osm + self.uid).text)
+            osmUserXML = ET.fromstring(apiResponse.text)
             # get number of changesets and edits
             cs = osmUserXML[0][4].attrib['count']
             # get account age
@@ -48,10 +53,7 @@ class validator:
             # set validator's cs,days attribute
             self.changesets = cs
             self.acctAge = acctAge
-        except requests.exceptions.HTTPError:
-            # when user profile does not exist, 
-            self.changesets = None
-            self.acctAge = None        
+              
         
         
         
