@@ -1,4 +1,5 @@
-# coding: utf-8
+#!/usr/bin/python
+# encoding: utf-8
 # code: main
 # purpose: build csv of validators and non-validators
 
@@ -16,20 +17,22 @@ usersJSON = requests.get("http://osmstats.redcross.org/users").json()
 # list to hold dictionaries for each to be used to make dataframe
 usersInfoList = []
 
-for user in usersJSON[352:400]:
+for user in usersJSON:
     # create validator object for current user, grab edits and stats
     user = validator(user['name'],user['id'])
     user.userStats()
-    user.userChangesetsDays()
+    user.userChangesetsAge()
     # use badge pointer here (bit.ly/2nUQfaP) to guess rough # edits made
-    numValidation = [item["level"] for item in user.osmStats['badges'] 
-                    if item["name"] == "Scrutinizer"]
-    if 3 in numValidation:
-        numValidation = 100
-    elif 2 in numValidation:
-        numValidation = 50
-    elif 1 in numValidation:
-        numValidation = 25
+    numVal = [i["level"] for i in user.osmStats['badges'] if i["name"] == "Scrutinizer"]
+    # TODO: Need to figure out how # are being generated. very crude measure currently
+    if 3 in numVal:
+        numVal = 100
+    elif 2 in numVal:
+        numVal = 50
+    elif 1 in numVal:
+        numVal = 25
+    else:
+    	numVal = 0
     # append validator info of interest usersInfoList
     usersInfoList.append({
         "user_name": user.name,
@@ -40,14 +43,15 @@ for user in usersJSON[352:400]:
         "road_km_add":user.osmStats['total_road_km_add'],
         "road_km_mod":user.osmStats['total_road_km_mod'],
         "waterway_km_add":user.osmStats['total_waterway_count_add'],
-        "validations": numValidation,
+        "validations": numVal,
         "changesets": user.changesets,
         "acct_age": user.acctAge,
         "josm_edits": user.osmStats['total_josm_edit_count']
     })
     
-#%% Make DATAFRAME FROM usersInfoList
+#%% MAKE/WRITE DATAFRAME FROM usersInfoList
 
-validators= pd.DataFrame(usersInfoList)
+validators = pd.DataFrame(usersInfoList)
+validators.to_csv('output/validators.csv')
 
 

@@ -1,4 +1,5 @@
-# coding: utf-8
+#!/usr/bin/python
+# encoding: utf-8
 # code: validator
 # purpose: module to make and describe validators 
 
@@ -17,7 +18,7 @@ class validator:
     # get validator info from osm-stats api and set it to info obj
     def userStats(self):
         osmStats = "http://osmstats.redcross.org/users/" + self.uid 
-        # catch when osmstats is not available
+        # catch when osmstats is not available, when no response just throw error
         try:
             osmstatsResponse = requests.get(osmStats)
             osmstatsResponse.raise_for_status()
@@ -30,14 +31,15 @@ class validator:
         
 
     # get validator # Changesets and age of osm account
-    def userChangesetsDays(self):
+    def userChangesetsAge(self):
         osm = "http://api.openstreetmap.org/api/0.6/user/" + self.uid
-        # catch when openstreetmap is not available
+        # catch when user's osm account is not there. 
+        # when the case, return None for change-sets and account age
         try:
             apiResponse = requests.get(osm)
             apiResponse.raise_for_status()
         except requests.exceptions.HTTPError:
-            #when user profile does not exist, 
+        	print("User account not active.")
             self.changesets = None
             self.acctAge = None  
         else:
