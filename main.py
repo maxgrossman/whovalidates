@@ -30,11 +30,17 @@ for user in usersJSON:
         numValidation = 50
     elif 1 in numValidation:
         numValidation = 25
-    # append to usersInfoList
+    # append validator info of interest usersInfoList
     usersInfoList.append({
         "user_name": user.name,
         "user_id": user.uid,
-        "validation": numValidation,
+        "build_count_add":user.osmStats['total_building_count_add'],
+        "build_count_mod":user.osmStats['total_building_count_mod'],
+        "poi_count_add":user.osmStats['total_poi_count_add'],
+        "road_km_add":user.osmStats['total_road_km_add'],
+        "road_km_mod":user.osmStats['total_road_km_mod'],
+        "waterway_km_add":user.osmStats['total_waterway_count_add'],
+        "validations": numValidation,
         "changesets": user.changesets,
         "acct_age": user.acctAge,
         "josm_edits": user.osmStats['total_josm_edit_count']
