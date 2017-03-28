@@ -77,6 +77,8 @@ validatorsPCA = pd.concat([validatorsTMP, validatorsPCA],axis=1)
 validatorFIN = pd.merge(validatorsFIN,validatorsPCA,how='inner')
 validatorsFIN.to_csv('output/validatorsPCA.csv')
 
+# next http://bit.ly/2nqWArk
+
 
 
 
