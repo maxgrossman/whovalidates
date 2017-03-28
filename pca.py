@@ -8,6 +8,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA as sklearnPCA
 import matplotlib.pyplot as plt
 
 
@@ -16,10 +17,11 @@ import matplotlib.pyplot as plt
 
 # read in validators, set index to user name, rid the uid
 validators = pd.read_csv("output/validators.csv")
-validators = validators.set_index(['user_name']).drop(['user_id'],
-                                 axis=1).dropna()
+validatorsTMP = validators.drop(['user_id','user_name'],axis=1).dropna()
+validatorsFIN = validators.set_index(['user_name']).drop(['user_id'],axis=1)
+
 # 0 = mean, +-1 = +-standard devation
-vStd = StandardScaler().fit_transform(validators)
+vStd = StandardScaler().fit_transform(validatorsTMP)
 
 #%% EIGENDECOMPOSITION 
 
@@ -64,5 +66,17 @@ with plt.style.context('seaborn-whitegrid'):
     plt.figure(figsize=(6, 4))
     for i in validatorsNFS:
         plt.scatter(i[0],i[1])
+
+#%% PUSH OUT A DATAFRAME
+
+vPCA = sklearnPCA(n_components=1)
+yPCA = vPCA.fit_transform(vStd)
+ComName = ["com" + str(x+1) for x in range(1)]
+validatorsPCA = pd.DataFrame(yPCA, columns = ComName)
+validatorsPCA = pd.concat([validatorsTMP, validatorsPCA],axis=1)
+validatorFIN = pd.merge(validatorsFIN,validatorsPCA,how='inner')
+validatorsFIN.to_csv('output/validatorsPCA.csv')
+
+
 
 
