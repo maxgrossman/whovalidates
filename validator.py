@@ -4,9 +4,8 @@
 # purpose: module to make and describe validators 
 
 import requests
-#from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
-import datetime
+from datetime import datetime
 
 # validator - includes name and uid, osm-stats info 
 class validator:
@@ -39,7 +38,7 @@ class validator:
             apiResponse = requests.get(osm)
             apiResponse.raise_for_status()
         except requests.exceptions.HTTPError:
-        	print("User account not active.")
+            print("User account not active.")
             self.changesets = None
             self.acctAge = None  
         else:
@@ -55,6 +54,16 @@ class validator:
             # set validator's cs,days attribute
             self.changesets = cs
             self.acctAge = acctAge
+    def userMapFreq(self):
+        # get edit times
+        editTimes = [datetime.strptime(i.split('.')[0],"%Y-%m-%dT%H:%M:%S") 
+                     for i in self.osmStats['edit_times']]
+        # get edit deltas
+        editDeltas = [(j-i).seconds for i,j in 
+                     zip(editTimes[:-1], editTimes[1:])]
+        # return the mean of edit editDetlas
+        return sum(editDeltas)/len(editDeltas)
+        
               
         
         

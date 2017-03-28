@@ -32,7 +32,7 @@ for user in usersJSON:
     elif 1 in numVal:
         numVal = 25
     else:
-    	numVal = 0
+        numVal = 0
     # append validator info of interest usersInfoList
     usersInfoList.append({
         "user_name": user.name,
@@ -46,6 +46,7 @@ for user in usersJSON:
         "validations": numVal,
         "changesets": user.changesets,
         "acct_age": user.acctAge,
+        "mapping_freq": user.userMapFreq(),
         "josm_edits": user.osmStats['total_josm_edit_count']
     })
     
