@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA as sklearnPCA
 import matplotlib.pyplot as plt
-
+%matplotlib inline
 
 #%% CLEAN DATAFRAME, SCALE FOR PCA
 
@@ -19,11 +19,12 @@ import matplotlib.pyplot as plt
 validators = pd.read_csv("output/validators.csv")
 validatorsTMP = validators.drop(['user_id','user_name'],axis=1).dropna()
 validatorsFIN = validators.set_index(['user_name']).drop(['user_id'],axis=1)
-
+validatorsTMP
+validatorsFIN
 # 0 = mean, +-1 = +-standard devation
 vStd = StandardScaler().fit_transform(validatorsTMP)
 
-#%% EIGENDECOMPOSITION 
+#%% EIGENDECOMPOSITION
 
 vMeanVec = np.mean(vStd, axis=0)
 covMat = (vStd - vMeanVec).T.dot((vStd - vMeanVec)) / (vStd.shape[0]-1)
@@ -37,7 +38,7 @@ eigVals, eigVecs = np.linalg.eig(covMat)
 
 for ev in eigVecs:
     np.testing.assert_array_almost_equal(1.0, np.linalg.norm(ev))
-    
+
 # Make a list of (eigenvalue, eigenvector) tuples
 eigPairs = [(np.abs(eigVals[i]), eigVecs[:,i]) for i in range(len(eigVals))]
 # Sort the (eigenvalue, eigenvector) tuples from high to low
@@ -67,18 +68,16 @@ with plt.style.context('seaborn-whitegrid'):
     for i in validatorsNFS:
         plt.scatter(i[0],i[1])
 
+validatorsNFS
+
 #%% PUSH OUT A DATAFRAME
 
 vPCA = sklearnPCA(n_components=1)
 yPCA = vPCA.fit_transform(vStd)
-ComName = ["com" + str(x+1) for x in range(1)]
+ComName = ["c_" + str(x+1) for x in range(1)]
 validatorsPCA = pd.DataFrame(yPCA, columns = ComName)
 validatorsPCA = pd.concat([validatorsTMP, validatorsPCA],axis=1)
-validatorFIN = pd.merge(validatorsFIN,validatorsPCA,how='inner')
+validatorsFIN = pd.merge(validatorsFIN,validatorsPCA,how='inner')
 validatorsFIN.to_csv('output/validatorsPCA.csv')
 
 # next http://bit.ly/2nqWArk
-
-
-
-

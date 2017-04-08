@@ -3,8 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.geojson
-
-
+notes.md
+pca.py
 # C extensions
 *.so
 *.ipynb
