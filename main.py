@@ -49,10 +49,9 @@ for user in usersJSON:
         "mapping_freq": user.userMapFreq(),
         "josm_edits": user.osmStats['total_josm_edit_count']
     })
-    
+    print(user.name)
+
 #%% MAKE/WRITE DATAFRAME FROM usersInfoList
 
 validators = pd.DataFrame(usersInfoList)
 validators.to_csv('output/validators.csv')
-
-
