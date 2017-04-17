@@ -3,34 +3,45 @@
 # code: validator
 # purpose: module to make and describe validators
 
+## libraries ##
+
+# make http requests
 import requests
+# make sense of xml api responses
 import xml.etree.ElementTree as ET
+# convert date strings to datetime objects to do math with
 from datetime import datetime
 
-# validator - includes name and uid, osm-stats info
+# validator object - object representing an osm user including name and uid, osm-stats info
 class validator:
-
+    
+    # initalize the object and its parameters
     def __init__(self, name, uid):
         self.name = str(name)
         self.uid = str(uid)
 
-    # get validator info from osm-stats api and set it to info obj
+    # method to get oms user info from osm-stats api and set it to the validator obj's info obj
     def userStats(self):
+        # api endpoint for specific user
         osmStats = "http://osmstats.redcross.org/users/" + self.uid
-        # catch when osmstats is not available, when no response just throw error
+        # try to reach osm-stats. when non-responsive, throw error (the except statement)
+        # when responsive, go to else and set osmStatsResponse and the osmStats object
         try:
+            # try to retrieve data at user endpoint of osm stats
             osmstatsResponse = requests.get(osmStats)
+            # get status of response 
             osmstatsResponse.raise_for_status()
+        # if status of response is an error, break
         except requests.exceptions.HTTPError as httpErr:
             print("osmstats seems to not be responding")
             print(httpErr)
+        # if no error, save response as described
         else:
-            # get user info from osm stats
             self.osmStats = osmstatsResponse.json()
 
-
-    # get validator # Changesets and age of osm account
+    # get number of validator changesets and account age
     def userChangesetsAge(self):
+        # api endpoint for specific user
         osm = "http://api.openstreetmap.org/api/0.6/user/" + self.uid
         # catch when user's osm account is not there.
         # when the case, return None for change-sets and account age
@@ -41,19 +52,24 @@ class validator:
             print("User account not active.")
             self.changesets = None
             self.acctAge = None
+        # when responsive
         else:
             # get xml of user profile
             osmUserXML = ET.fromstring(apiResponse.text)
-            # get number of changesets and edits
+            # get number of changesets and edits from the xml
             cs = osmUserXML[0][4].attrib['count']
-            # get account age
+            # get account age from the xml
             accountCreated = osmUserXML[0].attrib['account_created'].split('T')[0]
+            # make a date-time object of today 
             today = datetime.now()
+            # calculate delta of day account was generated to today 
             acctAge = today - datetime.strptime(accountCreated,'%Y-%m-%d')
+            # get that detla in days, and set that as account age
             acctAge = acctAge.days
-            # set validator's cs,days attribute
+            # set validator's number of changesets and says the validator changests and acctAge objects
             self.changesets = cs
             self.acctAge = acctAge
+            
     # get user's mapping frequency
     def userMapFreq(self):
         # get edit times
