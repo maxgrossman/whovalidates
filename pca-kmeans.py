@@ -14,15 +14,41 @@ from sklearn.decomposition import PCA as sklearnPCA
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import itertools
+import os
 %matplotlib inline
+
+
+# if not in the correct directory, this function helps the user get there
+def getRightDirectory():
+    if('whovalidates' in os.getcwd()):
+        pass
+    else:
+        neededDirectory = input("Provide path to 'whovalidates' folder: ")
+        try:
+            os.chdir(neededDirectory)
+        except:
+            print('\nThat directory does not exist! Try again')
+            getRightDirectory()
+        else:
+            if('/output' in [x[0] for x in os.walk(os.getcwd())][-1]):
+                pass
+            else:
+                print("\nThat folder is not correct, please provide the whovalidates folder!")
+                getRightDirectory()
+getRightDirectory()
+    
 
 #%% CLEAN DATAFRAME, SCALE FOR PCA
 
 
 # read in validators, set index to user name, rid the uid
-validators = pd.read_csv("output/validators_analysis.csv")
-validatorsTMP = validators.drop(['user_id','a','user_name','mapping_freq'],axis=1)[validators['validations']>0].dropna()
-validatorsFIN = validators.drop(['user_id'],axis=1)[validators['validations']>0]
+validators = pd.read_csv("output/validators_analysis.csv").drop(['validations','changesets'], axis=1)
+# csv holding # validated sqaures by 1400 known validators
+trueValidation = pd.read_csv ("output/trueValidations.csv")
+validators = pd.merge(validators,trueValidation,how='inner',on=['user_name'])
+validators['validations_age'] = validators['validations']/validators['a']
+validatorsTMP = validators.drop(['user_id','user_name','mapping_freq','validations'],axis=1).dropna()
+validatorsFIN = validators.drop(['user_id'],axis=1)
 
 # 0 = mean, +-1 = +-standard devation
 vStd = StandardScaler().fit_transform(validatorsTMP)
@@ -66,9 +92,7 @@ Index = ['explained_variance'] + validatorsTMP.columns.tolist()
 EigVar['Index'] = Index 
 EigVar = EigVar.set_index('Index')
 
-# make column names reflect components too. the 495 comes from # rows in 
-# original csv. So yPCA/#rows = # of principal components 
-ComponentNames = ["c" + str(x+1) for x in range(int(yPCA.size/495))]
+ComponentNames = ["c" + str(x+1) for x in range(4)]
 EigVar.columns = ComponentNames
 
 # write it to a csv
